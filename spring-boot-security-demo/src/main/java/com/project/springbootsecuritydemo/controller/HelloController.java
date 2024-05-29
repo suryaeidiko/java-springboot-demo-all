@@ -3,6 +3,8 @@ package com.project.springbootsecuritydemo.controller;
 import com.project.springbootsecuritydemo.model.Role;
 import com.project.springbootsecuritydemo.model.Student;
 import com.project.springbootsecuritydemo.repo.Repo;
+import com.project.springbootsecuritydemo.service.JwtService;
+import com.project.springbootsecuritydemo.service.MyUserDetails;
 import com.project.springbootsecuritydemo.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/control")
+@RequestMapping("/api/v1/student")
 @CrossOrigin(origins = "*")
 public class HelloController {
 
@@ -25,31 +27,36 @@ public class HelloController {
     AuthenticationManager authenticationManager;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    @GetMapping("/api/home")
+    @Autowired
+    private JwtService jwtService;
+    @Autowired
+    private MyUserDetails myUserDetails;
+
+    @GetMapping("/home")
     public String greet() {
         return "Hello World...";
     }
-    @GetMapping("/api/allStudents")
+    @GetMapping("/allStudents")
     public List<Student> getStudents() {
         return service.allStudents();
     }
-    @PostMapping("/api/student")
+    @PostMapping("/student")
     public String addStudent(@RequestBody Student student) {
         service.addStudent(student);
         return "student added...";
     }
-    @DeleteMapping("/api/delete/{roll_No}")
+    @DeleteMapping("/delete/{roll_No}")
     public String deleteStudent(@PathVariable("roll_No") int roll_No) {
         service.deleteStudent(roll_No);
         return "deleted...";
     }
 
-    @PutMapping("/api/update")
+    @PutMapping("/update")
     public String updateStudent(@RequestBody Student student) {
         service.updateJob(student);
         return "updated...";
     }
-    @GetMapping("/api/load")
+    @GetMapping("/load")
     public String loadUserAndStudent() {
 
 //        List<Role> role = new ArrayList<>(
@@ -82,9 +89,10 @@ public class HelloController {
          (new UsernamePasswordAuthenticationToken(role.getUsername(),role.getPassword()));
 
         if (authentication.isAuthenticated()) {
-            return "Login Success...";
+            return jwtService.generateToken(role.getUsername());
         } else {
-            return "login failed...";
+//            throw new UsernameNotFoundException("Invalid username...");
+            return "Invalid username...";
         }
     }
 

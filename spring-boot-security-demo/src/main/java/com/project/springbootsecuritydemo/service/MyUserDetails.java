@@ -36,7 +36,9 @@ public class MyUserDetails implements UserDetailsService {
         if (role.getRoles() == null) {
             return new String[] {"USER"};
         } else {
+            System.out.println("roles : "+ role.getRoles());
             return role.getRoles().split(",");
+
         }
     }
 }

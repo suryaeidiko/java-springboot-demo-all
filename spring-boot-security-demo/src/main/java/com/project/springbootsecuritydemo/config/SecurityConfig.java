@@ -20,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -27,18 +28,21 @@ public class SecurityConfig {
 
     @Autowired
     private MyUserDetails myUserDetails;
+    @Autowired
+    private JwtFilter jwtFilter;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(customize -> customize.disable())
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/api/v1/control/login","/api/v1/control/addUser").permitAll();
-                    registry.requestMatchers("/api/v1/control/api/load","/api/v1/control/api/allStudents","/api/v1/control/api/home").hasRole("USER");
-                    registry.requestMatchers("/api/v1/control/api/**").hasRole("ADMIN");
+                    registry.requestMatchers("/api/v1/student/login","/api/v1/student/addUser").permitAll();
+                    registry.requestMatchers("/api/v1/student/load","/api/v1/student/allStudents","/api/v1/student/home").hasRole("USER");
+                    registry.requestMatchers("/api/v1/student/**").hasRole("ADMIN");
 
                     registry.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(Customizer.withDefaults())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(formlogin -> formlogin.permitAll())
                 .build();
     }
